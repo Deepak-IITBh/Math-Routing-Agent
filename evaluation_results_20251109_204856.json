@@ -1,0 +1,44 @@
+[
+  {
+    "question": "An engineer is required to visit a factory for exactly four days during the first 15 days of every month and it is mandatory that no two visits take place on consecutive days. Then what is the number of all possible ways in which such visits to the factory can be made by the engineer during 1-15 June 2021?",
+    "answer": "495",
+    "response": "495",
+    "correct": true,
+    "source": ""
+  },
+  {
+    "question": "Let $f:[0,2] \\rightarrow \\mathbb{R}$ be the function defined by\n\n\\[\nf(x)=(3-\\sin (2 \\pi x)) \\sin \\left(\\pi x-\\frac{\\pi}{4}\\right)-\\sin \\left(3 \\pi x+\\frac{\\pi}{4}\\right)\n\\]\n\nIf $\\alpha, \\beta \\in[0,2]$ are such that $\\{x \\in[0,2]: f(x) \\geq 0\\}=[\\alpha, \\beta]$, then what is the value of $\\beta-\\alpha$?",
+    "answer": "1",
+    "response": "Error",
+    "correct": false,
+    "source": "error"
+  },
+  {
+    "question": "For $x \\in \\mathbb{R}$, let $\\tan ^{-1}(x) \\in\\left(-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right)$. Then what is the minimum value of the function $f: \\mathbb{R} \\rightarrow \\mathbb{R}$ defined by $f(x)=\\int_{0}^{x \\tan ^{-1} x} \\frac{e^{(t-\\cos t)}}{1+t^{2023}} d t$?",
+    "answer": "0",
+    "response": "Error",
+    "correct": false,
+    "source": "error"
+  },
+  {
+    "question": "Let $P$ be a matrix of order $3 \\times 3$ such that all the entries in $P$ are from the set $\\{-1,0,1\\}$. Then, what is the maximum possible value of the determinant of $P$?",
+    "answer": "4",
+    "response": "Error",
+    "correct": false,
+    "source": "error"
+  },
+  {
+    "question": "Suppose $a, b$ denote the distinct real roots of the quadratic polynomial $x^{2}+20 x-2020$ and suppose $c, d$ denote the distinct complex roots of the quadratic polynomial $x^{2}-20 x+2020$. Then the value of\n\n\\[\na c(a-c)+a d(a-d)+b c(b-c)+b d(b-d)\n\\]\n\nis\n\n(A) 0\n\n(B) 8000\n\n(C) 8080\n\n(D) 16000",
+    "answer": "D",
+    "response": "Error",
+    "correct": false,
+    "source": "error"
+  },
+  {
+    "question": "What is the number of 4-digit integers in the closed interval [2022, 4482] formed by using the digits $0,2,3,4,6,7$?",
+    "answer": "569",
+    "response": "Error",
+    "correct": false,
+    "source": "error"
+  }
+]

@@ -1,0 +1,7 @@
+Q: Derivative of x^2?
+A: 2x
+Steps: power rule.
+
+Q: Solve x^2 - 5x + 6 = 0
+A: x=2 or 3
+Steps: factorization.
