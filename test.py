@@ -69,7 +69,7 @@ async def run_evaluation():
     results = []
 
     for i, item in enumerate(data, 1):
-        print(f"\n🧩 [{i}/{len(data)}] {item['subject']}")
+        print(f"\n [{i}/{len(data)}] {item['subject']}")
         print("Q:", item['question'][:150], "...")
         response = await query_agent(item['question'])
         correct = evaluate_response(response, item['answer'])

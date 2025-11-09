@@ -158,7 +158,7 @@ class WebSearchMCP:
                 )
                 data = resp.json() if resp.status_code == 200 else {}
                 if not data.get("results"):
-                    logger.warning("⚠️ No Tavily results found.")
+                    logger.warning("No Tavily results found.")
                     return {"success": False, "results": [], "answer": ""}
                 return {
                     "success": True,
@@ -375,7 +375,7 @@ async def query_math(q: MathQuery):
 
 @app.get("/")
 async def root():
-    return {"message": "✅ Math Routing Agent (KB + Web Search + Logs)", "version": "2.3"}
+    return {"message": "Math Routing Agent (KB + Web Search + Logs)", "version": "2.3"}
 
 feedback_store = []
 
