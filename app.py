@@ -102,4 +102,4 @@ This Math Routing Agent uses:
 
 # Footer
 st.markdown("---")
-st.markdown("Made with ❤️ by Math Routing Agent Team")
+st.markdown("Made with by Math Routing Agent Team")

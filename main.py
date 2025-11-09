@@ -14,7 +14,7 @@ from langchain_core.messages import HumanMessage
 from typing_extensions import TypedDict
 import google.generativeai as genai
 import html
-# ============ SETUP ============
+
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("main")
@@ -33,13 +33,13 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
 
 if not GOOGLE_API_KEY:
-    raise ValueError("❌ GOOGLE_API_KEY not found in .env file")
+    raise ValueError("GOOGLE_API_KEY not found in .env file")
 if not TAVILY_API_KEY:
-    raise ValueError("❌ TAVILY_API_KEY not found in .env file")
+    raise ValueError("TAVILY_API_KEY not found in .env file")
 
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# ============ MODELS ============
+#MODELS 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash-exp",
     temperature=0.2,
@@ -52,7 +52,7 @@ embeddings = GoogleGenerativeAIEmbeddings(
     google_api_key=GOOGLE_API_KEY
 )
 
-# ============ SCHEMAS ============
+
 class MathQuery(BaseModel):
     question: str
     user_id: Optional[str] = "anonymous"
@@ -73,7 +73,6 @@ class MathResponse(BaseModel):
     timestamp: str
     route_log: List[str]
 
-# ============ GUARDRAILS ============
 class InputGuardrail:
     MATH_KEYWORDS = [
         'solve', 'calculate', 'prove', 'derivative', 'integral', 'equation',
@@ -84,10 +83,10 @@ class InputGuardrail:
     def validate(query: str) -> tuple[bool, str]:
         q = query.lower()
         if any(bad in q for bad in ["hack", "illegal", "exploit"]):
-            return False, "❌ Inappropriate content"
+            return False, "Inappropriate content"
         if any(k in q for k in InputGuardrail.MATH_KEYWORDS) or any(sym in q for sym in "+-*/=^∫π"):
-            return True, "✅ Valid math query"
-        return False, "❌ Not a math question"
+            return True, "Valid math query"
+        return False, "Not a math question"
 
 class OutputGuardrail:
     @staticmethod
@@ -96,7 +95,7 @@ class OutputGuardrail:
             return False, "Response too short"
         return True, "Valid output"
 
-# ============ KNOWLEDGE BASE ============
+#KNOWLEDGE BASE
 class KnowledgeBase:
     def __init__(self):
         self.db_path = "knowledge_base/chroma_db"
@@ -123,10 +122,10 @@ class KnowledgeBase:
         texts = splitter.create_documents(docs)
 
         if os.path.exists(self.db_path):
-            logger.info("✅ Loading existing Chroma DB...")
+            logger.info("Loading existing Chroma DB...")
             return Chroma(persist_directory=self.db_path, embedding_function=embeddings)
         else:
-            logger.info("🚀 Creating new Chroma DB...")
+            logger.info("Creating new Chroma DB...")
             db = Chroma.from_documents(texts, embedding=embeddings, persist_directory=self.db_path)
             db.persist()
             return db
@@ -143,8 +142,7 @@ class KnowledgeBase:
             return []
 
 kb = KnowledgeBase()
-
-# ============ WEB SEARCH ============
+#WEB SEARCH
 class WebSearchMCP:
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -173,7 +171,6 @@ class WebSearchMCP:
 
 web_search = WebSearchMCP(TAVILY_API_KEY)
 
-# ============ AGENT GRAPH ============
 class AgentState(TypedDict):
     question: str
     guardrail_passed: bool
@@ -218,44 +215,44 @@ def create_agent():
 
     def kb_search_node(state: AgentState):
         if not state["guardrail_passed"]:
-            state["route_log"].append("❌ Guardrail failed")
+            state["route_log"].append("Guardrail failed")
             return state
         results = kb.search(state["question"])
         state["kb_results"] = results
         if results:
-            logger.info("📚 Found relevant KB results")
+            logger.info("Found relevant KB results")
             state["route_log"].append("📚 KB hit")
         else:
-            logger.info("🚫 KB miss — fallback to Web Search")
-            state["route_log"].append("🚫 KB miss → Web Search")
+            logger.info("KB miss — fallback to Web Search")
+            state["route_log"].append("KB miss → Web Search")
         return state
 
     def router(state: AgentState) -> str:
         if state["kb_results"]:
             state["source"] = "knowledge_base"
             state["confidence"] = 0.9
-            logger.info("📘 Using Knowledge Base")
+            logger.info("Using Knowledge Base")
             return "generate"
         else:
             state["source"] = "web_search"
             state["confidence"] = 0.6
-            logger.info("🌐 Using Web Search")
+            logger.info("Using Web Search")
             return "web_search"
 
     async def web_node(state: AgentState):
         results = await web_search.search(state["question"])
         state["web_results"] = results
         if results.get("success"):
-            state["route_log"].append("🌐 Web search success")
+            state["route_log"].append("Web search success")
         else:
-            state["route_log"].append("⚠️ Web search failed")
+            state["route_log"].append("Web search failed")
         return state
 
 
     async def generate_node(state: AgentState, retries: int = 0):
         if retries > 2:
-            logger.warning("🚫 Stopping retries after 2 failed attempts.")
-            state["solution"] = "⚠️ Could not generate valid output after multiple attempts."
+            logger.warning("Stopping retries after 2 failed attempts.")
+            state["solution"] = "Could not generate valid output after multiple attempts."
             state["steps"] = ["LLM failed repeatedly."]
             state["confidence"] = 0.2
             return state
@@ -290,17 +287,16 @@ def create_agent():
         except Exception as e:
             err = str(e)
 
-            # ✅ Web search fallback for invalid output
+            # Web search fallback for invalid output
             if any(x in err for x in ["429", "ResourceExhausted", "Invalid", "Unterminated"]):
-                logger.warning("⚠️ Gemini output invalid → switching to Web Search")
-                state["route_log"].append("⚠️ Gemini parse failed → Web Search fallback")
+                logger.warning("Gemini output invalid → switching to Web Search")
+                state["route_log"].append("Gemini parse failed → Web Search fallback")
                 state["source"] = "web_search"
                 state["confidence"] = 0.4
                 web_results = await web_search.search(state["question"])
                 state["web_results"] = web_results
                 return await generate_node(state, retries + 1)
 
-            # ✅ Secondary mini-LLM call to try to extract answer from web search text
             if state["source"] == "web_search" and state.get("web_results", {}).get("results"):
                 web_text = "\n".join(
                     [r.get("content") or r.get("snippet", "") for r in state["web_results"]["results"]]
@@ -311,18 +307,18 @@ def create_agent():
                     result = json.loads(resp2.content)
                 except Exception:
                     result = {
-                        "solution": "⚠️ Could not derive correct answer, even after web fallback.",
+                        "solution": "Could not derive correct answer, even after web fallback.",
                         "steps": ["Web results did not yield a computable solution."]
                     }
             else:
                 result = {
-                    "solution": "⚠️ Could not parse JSON. Model output was invalid.",
+                    "solution": "Could not parse JSON. Model output was invalid.",
                     "steps": ["Fallback used because Gemini output failed."]
                 }
 
         state["solution"] = result.get("solution", "No valid solution generated.")
         state["steps"] = result.get("steps", ["No clear steps were found."])
-        state["route_log"].append(f"📘 Using {state['source']}")
+        state["route_log"].append(f"Using {state['source']}")
         return state
 
 
@@ -344,7 +340,6 @@ def create_agent():
 
 math_agent = create_agent()
 
-# ============ ROUTES ============
 @app.post("/query", response_model=MathResponse)
 async def query_math(q: MathQuery):
     try:
@@ -382,7 +377,6 @@ async def query_math(q: MathQuery):
 async def root():
     return {"message": "✅ Math Routing Agent (KB + Web Search + Logs)", "version": "2.3"}
 
-# ============ FEEDBACK ============
 feedback_store = []
 
 @app.post("/feedback")

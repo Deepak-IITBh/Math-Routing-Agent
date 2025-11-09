@@ -5,7 +5,7 @@ import random
 from datasets import load_dataset
 from datetime import datetime
 
-API_URL = "http://localhost:8000"  # Math Agent endpoint
+API_URL = "http://localhost:8000"  
 DATA_FILE = "jeebench_sample.json"
 
 async def load_dataset_sample(sample_size=1, use_saved=True):
@@ -13,15 +13,14 @@ async def load_dataset_sample(sample_size=1, use_saved=True):
     if use_saved:
         try:
             with open(DATA_FILE, "r") as f:
-                print(f"📂 Loaded saved dataset from {DATA_FILE}")
+                print(f"Loaded saved dataset from {DATA_FILE}")
                 return json.load(f)
         except FileNotFoundError:
-            print("⚠️ No saved dataset found. Downloading from Hugging Face...")
+            print("No saved dataset found. Downloading from Hugging Face...")
 
     dataset = load_dataset("daman1209arora/jeebench", split="test")
     sample = random.sample(list(dataset), min(sample_size, len(dataset)))
 
-    # Keep only useful fields
     sample_data = [
         {
             "question": item["question"],
@@ -33,7 +32,7 @@ async def load_dataset_sample(sample_size=1, use_saved=True):
 
     with open(DATA_FILE, "w") as f:
         json.dump(sample_data, f, indent=2)
-    print(f"💾 Saved {len(sample_data)} samples to {DATA_FILE}")
+    print(f"Saved {len(sample_data)} samples to {DATA_FILE}")
 
     return sample_data
 
@@ -45,7 +44,7 @@ async def query_agent(question: str):
             response.raise_for_status()
             return response.json()
     except Exception as e:
-        print(f"⚠️ Error querying agent: {e}")
+        print(f"Error querying agent: {e}")
         return {"solution": "Error", "confidence": 0.0, "source": "error"}
 
 def evaluate_response(response, correct_answer):
@@ -83,18 +82,18 @@ async def run_evaluation():
             "source": response.get("source", "unknown")
         })
 
-        print("✅ Correct" if correct else "❌ Incorrect")
+        print("Correct" if correct else "Incorrect")
 
     # Compute accuracy
     correct_count = sum(1 for r in results if r["correct"])
     acc = correct_count / len(results)
-    print(f"\n📊 Accuracy: {acc:.2%} ({correct_count}/{len(results)})")
+    print(f"\n Accuracy: {acc:.2%} ({correct_count}/{len(results)})")
 
     # Save results
     out_file = f"evaluation_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(out_file, "w") as f:
         json.dump(results, f, indent=2)
-    print(f"💾 Results saved to {out_file}")
+    print(f"Results saved to {out_file}")
 
 if __name__ == "__main__":
     asyncio.run(run_evaluation())
